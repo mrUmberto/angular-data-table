@@ -74,7 +74,7 @@ export class BodyController{
           rows = this.buildGroups();
         }
 
-        if(this.options.paging.externalPaging){
+        if(this.options.paging.externalPaging && this.options.scrollbarV){
           let idxs = this.getFirstLastIndexes(),
               idx = idxs.first;
 

@@ -1098,7 +1098,7 @@ class BodyController{
           rows = this.buildGroups();
         }
 
-        if(this.options.paging.externalPaging){
+        if(this.options.paging.externalPaging && this.options.scrollbarV){
           let idxs = this.getFirstLastIndexes(),
               idx = idxs.first;
 
@@ -2793,7 +2793,7 @@ class DataTableController {
       this.onSort({sorts: sorts});
 
       if (this.options.onSort){
-        this.options.onSort(sorts);
+        return this.options.onSort(sorts);
       }
 
       var clientSorts = [];

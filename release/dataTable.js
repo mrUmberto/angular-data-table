@@ -929,7 +929,7 @@
               rows = this.buildGroups();
             }
 
-            if (this.options.paging.externalPaging) {
+            if (this.options.paging.externalPaging && this.options.scrollbarV) {
               var idxs = this.getFirstLastIndexes(),
                   idx = idxs.first;
 
@@ -2230,7 +2230,7 @@
           this.onSort({ sorts: sorts });
 
           if (this.options.onSort) {
-            this.options.onSort(sorts);
+            return this.options.onSort(sorts);
           }
 
           var clientSorts = [];

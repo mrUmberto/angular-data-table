@@ -1573,7 +1573,7 @@ function BodyDirective($timeout){
       <div class="dt-body" ng-style="body.styles()" dt-seletion>
         <dt-scroller class="dt-body-scroller">
           <dt-group-row ng-repeat-start="r in body.tempRows track by $index"
-                        ng-if="r.group"
+                        ng-if="r.$group"
                         ng-style="body.groupRowStyles(r)" 
                         options="body.options"
                         on-group-toggle="body.onGroupToggle(group)"
@@ -1582,7 +1582,7 @@ function BodyDirective($timeout){
                         row="r">
           </dt-group-row>
           <dt-row ng-repeat-end
-                  ng-if="!r.group"
+                  ng-if="!r.$group"
                   row="body.getRowValue($index)"
                   tabindex="{{$index}}"
                   columns="body.columns"

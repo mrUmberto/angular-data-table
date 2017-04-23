@@ -16,7 +16,8 @@ export function BodyDirective($timeout){
       onTreeToggle: '&',
       onSelect: '&',
       onRowClick: '&',
-      onRowDblClick: '&'
+      onRowDblClick: '&',
+      onRowRightClick: '&'
     },
     scope: true,
     template: `
@@ -48,6 +49,7 @@ export function BodyDirective($timeout){
                   ng-keydown="selCtrl.keyDown($event, $index, r)"
                   ng-click="selCtrl.rowClicked($event, r.$$index, r)"
                   ng-dblclick="selCtrl.rowDblClicked($event, r.$$index, r)"
+                  ng-right-click="selCtrl.rowRightClicked($event, r.$$index, r)"
                   on-tree-toggle="body.onTreeToggled(row, cell)"
                   ng-class="body.rowClasses(r)"
                   options="body.options"

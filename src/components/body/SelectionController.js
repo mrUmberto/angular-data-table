@@ -64,6 +64,10 @@ export class SelectionController {
 
     this.body.onRowDblClick({ row: row });
   }
+  
+  rowRightClicked(event, index, row){
+    this.body.onRowRightClick({ row: row });
+  }
 
   /**
    * Invoked when a row directive's checkbox was changed.

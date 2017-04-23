@@ -21,6 +21,7 @@ export function DataTableDirective($window, $timeout, $parse){
       onPage: '&',
       onRowClick: '&',
       onRowDblClick: '&',
+      onRowRightClick: '&',
       onColumnResize: '&'
     },
     controllerAs: 'dt',
@@ -48,6 +49,7 @@ export function DataTableDirective($window, $timeout, $parse){
                    on-select="dt.onSelected(rows)"
                    on-row-click="dt.onRowClicked(row)"
                    on-row-dbl-click="dt.onRowDblClicked(row)"
+                   on-row-right-click="dt.onRowRightClicked(row)"
                    column-widths="dt.columnWidths"
                    options="dt.options"
                    on-page="dt.onBodyPage(offset, size)"

@@ -37,6 +37,18 @@
   }
 }());
 
+function RightClickDirective($parse) {
+    return function (scope, element, attrs) {
+        var fn = $parse(attrs.ngRightClick);
+        element.bind('contextmenu', function (event) {
+            scope.$apply(function () {
+                event.preventDefault();
+                fn(scope);
+            });
+        });
+    };
+}
+
 class PagerController {
 
   /**
@@ -804,6 +816,10 @@ class SelectionController {
 
     this.body.onRowDblClick({ row: row });
   }
+  
+  rowRightClicked(event, index, row){
+    this.body.onRowRightClick({ row: row });
+  }
 
   /**
    * Invoked when a row directive's checkbox was changed.
@@ -1558,7 +1574,8 @@ function BodyDirective($timeout){
       onTreeToggle: '&',
       onSelect: '&',
       onRowClick: '&',
-      onRowDblClick: '&'
+      onRowDblClick: '&',
+      onRowRightClick: '&'
     },
     scope: true,
     template: `
@@ -1590,6 +1607,7 @@ function BodyDirective($timeout){
                   ng-keydown="selCtrl.keyDown($event, $index, r)"
                   ng-click="selCtrl.rowClicked($event, r.$$index, r)"
                   ng-dblclick="selCtrl.rowDblClicked($event, r.$$index, r)"
+                  ng-right-click="selCtrl.rowRightClicked($event, r.$$index, r)"
                   on-tree-toggle="body.onTreeToggled(row, cell)"
                   ng-class="body.rowClasses(r)"
                   options="body.options"
@@ -2640,7 +2658,7 @@ class DataTableController {
    * @param  {filter}
    */
   /*@ngInject*/
-  constructor($scope, $filter, $log, $transclude){
+  constructor($scope, $filter, $log, $transclude) {
     Object.assign(this, {
       $scope: $scope,
       $filter: $filter,
@@ -2655,7 +2673,7 @@ class DataTableController {
     $scope.$watch('dt.options.columns', (newVal, oldVal) => {
       this.transposeColumnDefaults();
 
-      if(newVal.length !== oldVal.length){
+      if (newVal.length !== oldVal.length) {
         this.adjustColumns();
       }
 
@@ -2664,7 +2682,7 @@ class DataTableController {
 
     // default sort
     var watch = $scope.$watch('dt.rows', (newVal) => {
-      if(newVal){
+      if (newVal) {
         watch();
         this.onSorted();
       }
@@ -2674,19 +2692,18 @@ class DataTableController {
   /**
    * Creates and extends default options for the grid control
    */
-  defaults(){
+  defaults() {
     this.expanded = this.expanded || {};
 
-    this.options = angular.extend(angular.
-      copy(TableDefaults), this.options);
+    this.options = angular.extend(angular.copy(TableDefaults), this.options);
 
-    angular.forEach(TableDefaults.paging, (v,k) => {
-      if(!this.options.paging[k]){
+    angular.forEach(TableDefaults.paging, (v, k) => {
+      if (!this.options.paging[k]) {
         this.options.paging[k] = v;
       }
     });
 
-    if(this.options.selectable && this.options.multiSelect){
+    if (this.options.selectable && this.options.multiSelect) {
       this.selected = this.selected || [];
     }
   }
@@ -2696,18 +2713,18 @@ class DataTableController {
    * make sure all the columns added have the correct
    * defaults applied.
    */
-  transposeColumnDefaults(){
-    for(var i=0, len = this.options.columns.length; i < len; i++) {
+  transposeColumnDefaults() {
+    for (var i = 0, len = this.options.columns.length; i < len; i++) {
       var column = this.options.columns[i];
       column.$id = ObjectId();
 
-      angular.forEach(ColumnDefaults, (v,k) => {
-        if(!column.hasOwnProperty(k)){
+      angular.forEach(ColumnDefaults, (v, k) => {
+        if (!column.hasOwnProperty(k)) {
           column[k] = v;
         }
       });
 
-      if(column.name && !column.prop){
+      if (column.name && !column.prop) {
         column.prop = CamelCase(column.name);
       }
 
@@ -2718,7 +2735,7 @@ class DataTableController {
   /**
    * Calculate column groups and widths
    */
-  calculateColumns(){
+  calculateColumns() {
     var columns = this.options.columns;
     this.columnsByPin = ColumnsByPin(columns);
     this.columnWidths = ColumnGroupWidths(this.columnsByPin, columns);
@@ -2728,7 +2745,7 @@ class DataTableController {
    * Returns the css classes for the data table.
    * @return {style object}
    */
-  tableCss(){
+  tableCss() {
     return {
       'fixed': this.options.scrollbarV,
       'selectable': this.options.selectable,
@@ -2740,12 +2757,12 @@ class DataTableController {
    * Adjusts the column widths to handle greed/etc.
    * @param  {int} forceIdx
    */
-  adjustColumns(forceIdx){
+  adjustColumns(forceIdx) {
     var width = this.options.internal.innerWidth - this.options.internal.scrollBarWidth;
 
-    if(this.options.columnMode === 'force'){
+    if (this.options.columnMode === 'force') {
       ForceFillColumnWidths(this.options.columns, width, forceIdx);
-    } else if(this.options.columnMode === 'flex') {
+    } else if (this.options.columnMode === 'flex') {
       AdjustColumnWidths(this.options.columns, width);
     }
   }
@@ -2754,16 +2771,16 @@ class DataTableController {
    * Calculates the page size given the height * row height.
    * @return {[type]}
    */
-  calculatePageSize(){
+  calculatePageSize() {
     this.options.paging.size = Math.ceil(
-      this.options.internal.bodyHeight / this.options.rowHeight) + 1;
+        this.options.internal.bodyHeight / this.options.rowHeight) + 1;
   }
 
   /**
    * Sorts the values of the grid for client side sorting.
    */
-  onSorted(){
-    if(!this.rows) return;
+  onSorted() {
+    if (!this.rows) return;
 
     // return all sorted column, in the same order in which they were sorted
     var sorts = this.options.columns
@@ -2772,12 +2789,12 @@ class DataTableController {
       })
       .sort((a, b) => {
         // sort the columns with lower sortPriority order first
-        if (a.sortPriority && b.sortPriority){
+        if (a.sortPriority && b.sortPriority) {
           if (a.sortPriority > b.sortPriority) return 1;
           if (a.sortPriority < b.sortPriority) return -1;
-        } else if (a.sortPriority){
+        } else if (a.sortPriority) {
           return -1;
-        } else if (b.sortPriority){
+        } else if (b.sortPriority) {
           return 1;
         }
 
@@ -2789,17 +2806,17 @@ class DataTableController {
         return c;
       });
 
-    if(sorts.length){
+    if (sorts.length) {
       this.onSort({sorts: sorts});
 
-      if (this.options.onSort){
+      if (this.options.onSort) {
         return this.options.onSort(sorts);
       }
 
       var clientSorts = [];
-      for(var i=0, len=sorts.length; i < len; i++) {
+      for (var i = 0, len = sorts.length; i < len; i++) {
         var c = sorts[i];
-        if(c.comparator !== false){
+        if (c.comparator !== false) {
           var dir = c.sort === 'asc' ? '' : '-';
           if (c.sortBy !== undefined) {
             clientSorts.push(dir + c.sortBy);
@@ -2809,7 +2826,7 @@ class DataTableController {
         }
       }
 
-      if(clientSorts.length){
+      if (clientSorts.length) {
         // todo: more ideal to just resort vs splice and repush
         // but wasn't responding to this change ...
         var sortedValues = this.$filter('orderBy')(this.rows, clientSorts);
@@ -2826,7 +2843,7 @@ class DataTableController {
    * @param  {row model}
    * @param  {cell model}
    */
-  onTreeToggled(row, cell){
+  onTreeToggled(row, cell) {
     this.onTreeToggle({
       row: row,
       cell: cell
@@ -2838,7 +2855,7 @@ class DataTableController {
    * @param  {offset}
    * @param  {size}
    */
-  onBodyPage(offset, size){
+  onBodyPage(offset, size) {
     this.onPage({
       offset: offset,
       size: size
@@ -2850,9 +2867,9 @@ class DataTableController {
    * @param  {offset}
    * @param  {size}
    */
-  onFooterPage(offset, size){
+  onFooterPage(offset, size) {
     var pageBlockSize = this.options.rowHeight * size,
-        offsetY = pageBlockSize * offset;
+      offsetY = pageBlockSize * offset;
 
     this.options.internal.setYOffset(offsetY);
   }
@@ -2860,12 +2877,12 @@ class DataTableController {
   /**
    * Invoked when the header checkbox directive has changed.
    */
-  onHeaderCheckboxChange(){
-    if(this.rows){
+  onHeaderCheckboxChange() {
+    if (this.rows) {
       var matches = this.selected.length === this.rows.length;
       this.selected.splice(0, this.selected.length);
 
-      if(!matches){
+      if (!matches) {
         this.selected.push(...this.rows);
       }
     }
@@ -2875,8 +2892,8 @@ class DataTableController {
    * Returns if all the rows are selected
    * @return {Boolean} if all selected
    */
-  isAllRowsSelected(){
-    if(this.rows) return false;
+  isAllRowsSelected() {
+    if (this.rows) return false;
     return this.selected.length === this.rows.length;
   }
 
@@ -2885,9 +2902,9 @@ class DataTableController {
    * @param  {object} column
    * @param  {int} width
    */
-  onResized(column, width){
-    var idx =this.options.columns.indexOf(column);
-    if(idx > -1){
+  onResized(column, width) {
+    var idx = this.options.columns.indexOf(column);
+    if (idx > -1) {
       var column = this.options.columns[idx];
       column.width = width;
       column.canAutoResize = false;
@@ -2896,7 +2913,7 @@ class DataTableController {
       this.calculateColumns();
     }
 
-    if (this.onColumnResize){
+    if (this.onColumnResize) {
       this.onColumnResize({
         column: column,
         width: width
@@ -2908,7 +2925,7 @@ class DataTableController {
    * Occurs when a row was selected
    * @param  {object} rows
    */
-  onSelected(rows){
+  onSelected(rows) {
     this.onSelect({
       rows: rows
     });
@@ -2918,7 +2935,7 @@ class DataTableController {
    * Occurs when a row was click but may not be selected.
    * @param  {object} row
    */
-  onRowClicked(row){
+  onRowClicked(row) {
     this.onRowClick({
       row: row
     });
@@ -2928,8 +2945,18 @@ class DataTableController {
    * Occurs when a row was double click but may not be selected.
    * @param  {object} row
    */
-  onRowDblClicked(row){
+  onRowDblClicked(row) {
     this.onRowDblClick({
+      row: row
+    });
+  }
+
+  /**
+   * Occurs when a row right-clicked
+   * @param  {object} row
+   */
+  onRowRightClicked(row) {
+    this.onRowRightClick({
       row: row
     });
   }
@@ -2953,6 +2980,7 @@ function DataTableDirective($window, $timeout, $parse){
       onPage: '&',
       onRowClick: '&',
       onRowDblClick: '&',
+      onRowRightClick: '&',
       onColumnResize: '&'
     },
     controllerAs: 'dt',
@@ -2980,6 +3008,7 @@ function DataTableDirective($window, $timeout, $parse){
                    on-select="dt.onSelected(rows)"
                    on-row-click="dt.onRowClicked(row)"
                    on-row-dbl-click="dt.onRowDblClicked(row)"
+                   on-row-right-click="dt.onRowRightClicked(row)"
                    column-widths="dt.columnWidths"
                    options="dt.options"
                    on-page="dt.onBodyPage(offset, size)"
@@ -3078,6 +3107,7 @@ var dataTable = angular
   .directive('dtGroupRow', GroupRowDirective)
   .directive('dtCell', CellDirective)
   .directive('dtFooter', FooterDirective)
-  .directive('dtPager', PagerDirective);
+  .directive('dtPager', PagerDirective)
+  .directive('ngRightClick', RightClickDirective);
 
 export default dataTable;

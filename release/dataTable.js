@@ -27,6 +27,7 @@
   BodyDirective.$inject = ["$timeout"];
   ScrollerDirective.$inject = ["$timeout", "$rootScope"];
   CellDirective.$inject = ["$rootScope", "$compile", "$log", "$timeout"];
+  RightClickDirective.$inject = ["$parse"];
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
@@ -102,6 +103,18 @@
       polyfill(i);
     }
   })();
+
+  function RightClickDirective($parse) {
+    return function (scope, element, attrs) {
+      var fn = $parse(attrs.ngRightClick);
+      element.bind('contextmenu', function (event) {
+        scope.$apply(function () {
+          event.preventDefault();
+          fn(scope);
+        });
+      });
+    };
+  }
 
   var PagerController = function () {
     PagerController.$inject = ["$scope"];
@@ -667,6 +680,11 @@
         }
 
         this.body.onRowDblClick({ row: row });
+      }
+    }, {
+      key: "rowRightClicked",
+      value: function rowRightClicked(event, index, row) {
+        this.body.onRowRightClick({ row: row });
       }
     }, {
       key: "onCheckboxChange",
@@ -1319,10 +1337,11 @@
         onTreeToggle: '&',
         onSelect: '&',
         onRowClick: '&',
-        onRowDblClick: '&'
+        onRowDblClick: '&',
+        onRowRightClick: '&'
       },
       scope: true,
-      template: "\n      <div \n        class=\"progress-linear\" \n        role=\"progressbar\" \n        ng-show=\"body.options.paging.loadingIndicator\">\n        <div class=\"container\">\n          <div class=\"bar\"></div>\n        </div>\n      </div>\n      <div class=\"dt-body\" ng-style=\"body.styles()\" dt-seletion>\n        <dt-scroller class=\"dt-body-scroller\">\n          <dt-group-row ng-repeat-start=\"r in body.tempRows track by $index\"\n                        ng-if=\"r.$group\"\n                        ng-style=\"body.groupRowStyles(r)\" \n                        options=\"body.options\"\n                        on-group-toggle=\"body.onGroupToggle(group)\"\n                        expanded=\"body.getRowExpanded(r)\"\n                        tabindex=\"{{$index}}\"\n                        row=\"r\">\n          </dt-group-row>\n          <dt-row ng-repeat-end\n                  ng-if=\"!r.$group\"\n                  row=\"body.getRowValue($index)\"\n                  tabindex=\"{{$index}}\"\n                  columns=\"body.columns\"\n                  column-widths=\"body.columnWidths\"\n                  ng-keydown=\"selCtrl.keyDown($event, $index, r)\"\n                  ng-click=\"selCtrl.rowClicked($event, r.$$index, r)\"\n                  ng-dblclick=\"selCtrl.rowDblClicked($event, r.$$index, r)\"\n                  on-tree-toggle=\"body.onTreeToggled(row, cell)\"\n                  ng-class=\"body.rowClasses(r)\"\n                  options=\"body.options\"\n                  selected=\"body.isSelected(r)\"\n                  on-checkbox-change=\"selCtrl.onCheckboxChange($event, $index, row)\"\n                  columns=\"body.columnsByPin\"\n                  has-children=\"body.getRowHasChildren(r)\"\n                  expanded=\"body.getRowExpanded(r)\"\n                  ng-style=\"body.rowStyles(r)\">\n          </dt-row>\n        </dt-scroller>\n        <div ng-if=\"body.rows && !body.rows.length\" \n             class=\"empty-row\" \n             ng-bind=\"::body.options.emptyMessage\">\n       </div>\n       <div ng-if=\"body.rows === undefined\" \n             class=\"loading-row\"\n             ng-bind=\"::body.options.loadingMessage\">\n        </div>\n      </div>"
+      template: "\n      <div \n        class=\"progress-linear\" \n        role=\"progressbar\" \n        ng-show=\"body.options.paging.loadingIndicator\">\n        <div class=\"container\">\n          <div class=\"bar\"></div>\n        </div>\n      </div>\n      <div class=\"dt-body\" ng-style=\"body.styles()\" dt-seletion>\n        <dt-scroller class=\"dt-body-scroller\">\n          <dt-group-row ng-repeat-start=\"r in body.tempRows track by $index\"\n                        ng-if=\"r.$group\"\n                        ng-style=\"body.groupRowStyles(r)\" \n                        options=\"body.options\"\n                        on-group-toggle=\"body.onGroupToggle(group)\"\n                        expanded=\"body.getRowExpanded(r)\"\n                        tabindex=\"{{$index}}\"\n                        row=\"r\">\n          </dt-group-row>\n          <dt-row ng-repeat-end\n                  ng-if=\"!r.$group\"\n                  row=\"body.getRowValue($index)\"\n                  tabindex=\"{{$index}}\"\n                  columns=\"body.columns\"\n                  column-widths=\"body.columnWidths\"\n                  ng-keydown=\"selCtrl.keyDown($event, $index, r)\"\n                  ng-click=\"selCtrl.rowClicked($event, r.$$index, r)\"\n                  ng-dblclick=\"selCtrl.rowDblClicked($event, r.$$index, r)\"\n                  ng-right-click=\"selCtrl.rowRightClicked($event, r.$$index, r)\"\n                  on-tree-toggle=\"body.onTreeToggled(row, cell)\"\n                  ng-class=\"body.rowClasses(r)\"\n                  options=\"body.options\"\n                  selected=\"body.isSelected(r)\"\n                  on-checkbox-change=\"selCtrl.onCheckboxChange($event, $index, row)\"\n                  columns=\"body.columnsByPin\"\n                  has-children=\"body.getRowHasChildren(r)\"\n                  expanded=\"body.getRowExpanded(r)\"\n                  ng-style=\"body.rowStyles(r)\">\n          </dt-row>\n        </dt-scroller>\n        <div ng-if=\"body.rows && !body.rows.length\" \n             class=\"empty-row\" \n             ng-bind=\"::body.options.emptyMessage\">\n       </div>\n       <div ng-if=\"body.rows === undefined\" \n             class=\"loading-row\"\n             ng-bind=\"::body.options.loadingMessage\">\n        </div>\n      </div>"
     };
   }
 
@@ -2342,6 +2361,13 @@
           row: row
         });
       }
+    }, {
+      key: "onRowRightClicked",
+      value: function onRowRightClicked(row) {
+        this.onRowRightClick({
+          row: row
+        });
+      }
     }]);
 
     return DataTableController;
@@ -2364,6 +2390,7 @@
         onPage: '&',
         onRowClick: '&',
         onRowDblClick: '&',
+        onRowRightClick: '&',
         onColumnResize: '&'
       },
       controllerAs: 'dt',
@@ -2372,7 +2399,7 @@
             id = ObjectId();
         DataTableService.saveColumns(id, columns);
 
-        return "<div class=\"dt\" ng-class=\"dt.tableCss()\" data-column-id=\"" + id + "\">\n          <dt-header options=\"dt.options\"\n                     on-checkbox-change=\"dt.onHeaderCheckboxChange()\"\n                     columns=\"dt.columnsByPin\"\n                     column-widths=\"dt.columnWidths\"\n                     ng-if=\"dt.options.headerHeight\"\n                     on-resize=\"dt.onResized(column, width)\"\n                     selected=\"dt.isAllRowsSelected()\"\n                     on-sort=\"dt.onSorted()\">\n          </dt-header>\n          <dt-body rows=\"dt.rows\"\n                   selected=\"dt.selected\"\n                   expanded=\"dt.expanded\"\n                   columns=\"dt.columnsByPin\"\n                   on-select=\"dt.onSelected(rows)\"\n                   on-row-click=\"dt.onRowClicked(row)\"\n                   on-row-dbl-click=\"dt.onRowDblClicked(row)\"\n                   column-widths=\"dt.columnWidths\"\n                   options=\"dt.options\"\n                   on-page=\"dt.onBodyPage(offset, size)\"\n                   on-tree-toggle=\"dt.onTreeToggled(row, cell)\">\n           </dt-body>\n          <dt-footer ng-if=\"dt.options.footerHeight\"\n                     ng-style=\"{ height: dt.options.footerHeight + 'px' }\"\n                     on-page=\"dt.onFooterPage(offset, size)\"\n                     paging=\"dt.options.paging\">\n           </dt-footer>\n        </div>";
+        return "<div class=\"dt\" ng-class=\"dt.tableCss()\" data-column-id=\"" + id + "\">\n          <dt-header options=\"dt.options\"\n                     on-checkbox-change=\"dt.onHeaderCheckboxChange()\"\n                     columns=\"dt.columnsByPin\"\n                     column-widths=\"dt.columnWidths\"\n                     ng-if=\"dt.options.headerHeight\"\n                     on-resize=\"dt.onResized(column, width)\"\n                     selected=\"dt.isAllRowsSelected()\"\n                     on-sort=\"dt.onSorted()\">\n          </dt-header>\n          <dt-body rows=\"dt.rows\"\n                   selected=\"dt.selected\"\n                   expanded=\"dt.expanded\"\n                   columns=\"dt.columnsByPin\"\n                   on-select=\"dt.onSelected(rows)\"\n                   on-row-click=\"dt.onRowClicked(row)\"\n                   on-row-dbl-click=\"dt.onRowDblClicked(row)\"\n                   on-row-right-click=\"dt.onRowRightClicked(row)\"\n                   column-widths=\"dt.columnWidths\"\n                   options=\"dt.options\"\n                   on-page=\"dt.onBodyPage(offset, size)\"\n                   on-tree-toggle=\"dt.onTreeToggled(row, cell)\">\n           </dt-body>\n          <dt-footer ng-if=\"dt.options.footerHeight\"\n                     ng-style=\"{ height: dt.options.footerHeight + 'px' }\"\n                     on-page=\"dt.onFooterPage(offset, size)\"\n                     paging=\"dt.options.paging\">\n           </dt-footer>\n        </div>";
       },
       compile: function compile(tElem, tAttrs) {
         return {
@@ -2433,7 +2460,7 @@
     };
   }
 
-  var dataTable = angular.module('data-table', []).directive('dtable', DataTableDirective).directive('resizable', ResizableDirective).directive('sortable', SortableDirective).directive('dtHeader', HeaderDirective).directive('dtHeaderCell', HeaderCellDirective).directive('dtBody', BodyDirective).directive('dtScroller', ScrollerDirective).directive('dtSeletion', SelectionDirective).directive('dtRow', RowDirective).directive('dtGroupRow', GroupRowDirective).directive('dtCell', CellDirective).directive('dtFooter', FooterDirective).directive('dtPager', PagerDirective);
+  var dataTable = angular.module('data-table', []).directive('dtable', DataTableDirective).directive('resizable', ResizableDirective).directive('sortable', SortableDirective).directive('dtHeader', HeaderDirective).directive('dtHeaderCell', HeaderCellDirective).directive('dtBody', BodyDirective).directive('dtScroller', ScrollerDirective).directive('dtSeletion', SelectionDirective).directive('dtRow', RowDirective).directive('dtGroupRow', GroupRowDirective).directive('dtCell', CellDirective).directive('dtFooter', FooterDirective).directive('dtPager', PagerDirective).directive('ngRightClick', RightClickDirective);
 
   exports.default = dataTable;
 });

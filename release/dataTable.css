@@ -1,4 +1,7 @@
 .dt {
+  font-family: "Roboto";
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.87) !important;
   visibility: hidden;
   overflow: hidden;
   justify-content: center;
@@ -59,6 +62,8 @@
 }
 .dt .dt-header {
   overflow: hidden;
+  color: rgba(0, 0, 0, 0.54) !important;
+  font-weight: 500;
 }
 .dt .dt-header .dt-header-inner {
   white-space: nowrap;
@@ -76,6 +81,9 @@
 .dt .dt-header .dt-header-cell.sortable .dt-header-cell-label {
   cursor: pointer;
 }
+.dt .dt-header .dt-header-cell.sortable .dt-header-cell-label.sorted {
+  color: rgba(0, 0, 0, 0.87) !important;
+}
 .dt .dt-header .dt-header-cell .sort-btn {
   visibility: hidden;
   display: inline-block;
@@ -83,6 +91,7 @@
 .dt .dt-header .dt-header-cell .sort-btn.sort-desc,
 .dt .dt-header .dt-header-cell .sort-btn.sort-asc {
   visibility: visible;
+  color: rgba(0, 0, 0, 0.87) !important;
 }
 .dt .dt-header .dt-header-cell .dt-resize-handle {
   display: inline-block;

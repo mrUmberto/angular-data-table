@@ -34,6 +34,7 @@ export function HeaderCellDirective($compile){
                    ng-click="hcell.onCheckboxChange()" />
           </label>
           <span class="dt-header-cell-label"
+                ng-class="hcell.sortedLabel()" 
                 ng-click="hcell.onSorted()">
           </span>
           <span ng-class="hcell.sortClass()"></span>

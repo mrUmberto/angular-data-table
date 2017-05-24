@@ -1,5 +1,7 @@
 .dt{
-
+  font-family: "Roboto";
+  font-weight: 400;
+  color: rgba(0,0,0,.87) !important;
   visibility: hidden;
   overflow:hidden;
 
@@ -72,6 +74,8 @@
 
 	.dt-header{
     overflow:hidden;
+    color: rgba(0,0,0,.54) !important;
+    font-weight: 500;
 
     .dt-header-inner{
       white-space: nowrap;
@@ -91,6 +95,9 @@
       &.sortable{
         .dt-header-cell-label{
           cursor: pointer;
+          &.sorted{
+            color: rgba(0,0,0,.87) !important;
+          }
         }
       }
 
@@ -101,6 +108,7 @@
         &.sort-desc,
         &.sort-asc{
           visibility: visible;
+          color: rgba(0,0,0,.87) !important;
         }
       }
 

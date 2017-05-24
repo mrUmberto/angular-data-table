@@ -58,6 +58,11 @@ export class HeaderCellController{
     };
   }
 
+  sortedLabel() {
+    return {
+      'sorted': this.column.sort === 'asc' || this.column.sort === 'desc'
+    };
+  }
   /**
    * Updates the column width on resize
    * @param  {width}

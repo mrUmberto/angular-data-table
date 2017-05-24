@@ -1707,6 +1707,11 @@ class HeaderCellController{
     };
   }
 
+  sortedLabel() {
+    return {
+      'sorted': this.column.sort === 'asc' || this.column.sort === 'desc'
+    };
+  }
   /**
    * Updates the column width on resize
    * @param  {width}
@@ -1761,6 +1766,7 @@ function HeaderCellDirective($compile){
                    ng-click="hcell.onCheckboxChange()" />
           </label>
           <span class="dt-header-cell-label"
+                ng-class="hcell.sortedLabel()" 
                 ng-click="hcell.onSorted()">
           </span>
           <span ng-class="hcell.sortClass()"></span>

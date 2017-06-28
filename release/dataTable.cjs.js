@@ -978,7 +978,7 @@ var BodyController = function () {
       var depth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
 
       var parentProp = this.treeColumn ? this.treeColumn.relationProp : this.groupColumn.prop;
-      var prop = this.treeColumn.prop;
+      var prop = this.treeColumn.groupProp;
       if (!row[parentProp]) {
         return depth;
       }
@@ -1021,7 +1021,7 @@ var BodyController = function () {
         }
 
         if (this.treeColumn) {
-          var prop = this.treeColumn.prop;
+          var prop = this.treeColumn.groupProp;
           this.index[row[prop]] = row;
 
           if (row[parentProp] === undefined) {
@@ -1093,7 +1093,7 @@ var BodyController = function () {
       function addChildren(fromArray, toArray, level) {
         fromArray.forEach(function (row) {
           var relVal = row[self.treeColumn.relationProp],
-              key = row[self.treeColumn.prop],
+              key = row[self.treeColumn.groupProp],
               groupRows = self.rowsByGroup[key],
               expanded = self.expanded[key];
 
@@ -1227,7 +1227,7 @@ var BodyController = function () {
     key: "getRowExpanded",
     value: function getRowExpanded(row) {
       if (this.treeColumn) {
-        return this.expanded[row[this.treeColumn.prop]];
+        return this.expanded[row[this.treeColumn.groupProp]];
       } else if (this.groupColumn) {
         return this.expanded[row.name];
       }
@@ -1236,13 +1236,13 @@ var BodyController = function () {
     key: "getRowHasChildren",
     value: function getRowHasChildren(row) {
       if (!this.treeColumn) return;
-      var children = this.rowsByGroup[row[this.treeColumn.prop]];
+      var children = this.rowsByGroup[row[this.treeColumn.groupProp]];
       return children !== undefined || children && !children.length;
     }
   }, {
     key: "onTreeToggled",
     value: function onTreeToggled(row, cell) {
-      var val = row[this.treeColumn.prop];
+      var val = row[this.treeColumn.groupProp];
       this.expanded[val] = !this.expanded[val];
 
       if (this.options.scrollbarV) {

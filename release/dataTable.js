@@ -1077,6 +1077,11 @@
                   }
                 }
               }
+
+              if (!parent) {
+                row.$$depth = 0;
+                continue;
+              }
               if (parent.$$depth === undefined) {
                 parent.$$depth = this.calculateDepth(parent);
               }
